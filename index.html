@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Temperatura Sala</title>
-  <script src="https://unpkg.com"></script>
+ <script src="https://jsdelivr.net"></script>
   <style>
     :root {
       --bg: #F2F2F7;
@@ -126,7 +126,9 @@
 
   <script>
     const TOPIC = "arduino/temperatura/mi_sala_secreta_987";
-    const client = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
+    const client = mqtt.connect("wss://test.mosquitto.org:8081/mqtt", {
+  clientId: "movil_" + Math.random().toString(16).substr(2, 8)
+});
 
     client.on("connect", () => {
       document.getElementById("connDot").classList.add("online");
