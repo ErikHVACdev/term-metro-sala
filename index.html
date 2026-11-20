@@ -8,7 +8,9 @@
   <title>Temperatura Sala</title>
   <link rel="icon" type="image/png" href="icono.png">
   <link rel="apple-touch-icon" href="icono.png">
-<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>)
+  <script>
+    document.write('<scr' + 'ipt src="https://' + 'cdn.jsdelivr.net' + '/npm/mqtt@5.10.1/dist/mqtt.min.js"></scr' + 'ipt>');
+  </script>
   <style>
     :root {
       --bg: #F2F2F7;
@@ -17,6 +19,7 @@
       --text: #1C1C1E;
       --text-sec: #8E8E93;
       --track: #E5E5EA;
+      --grid: rgba(0, 0, 0, 0.06);
       --shadow: 0 4px 20px rgba(0,0,0,0.05);
     }
     body.dark {
@@ -26,16 +29,17 @@
       --text: #FFFFFF;
       --text-sec: #98989D;
       --track: #2C2C2E;
+      --grid: rgba(255, 255, 255, 0.08);
       --shadow: none;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background: var(--bg); color: var(--text); display: flex; justify-content: center; min-height: 100vh; padding: 24px 20px; transition: background 0.3s, color 0.3s; }
-    .app { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 18px; }
+    body { background: var(--bg); color: var(--text); display: flex; justify-content: center; min-height: 100vh; padding: 20px; transition: background 0.3s, color 0.3s; }
+    .app { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; }
     
     /* Cabecera */
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; }
-    .subtitle { font-size: 12px; font-weight: 600; color: var(--text-sec); letter-spacing: 0.5px; text-transform: uppercase; }
-    .title { font-size: 26px; font-weight: 700; margin-top: 2px; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 4px; }
+    .subtitle { font-size: 11px; font-weight: 600; color: var(--text-sec); letter-spacing: 0.5px; text-transform: uppercase; }
+    .title { font-size: 24px; font-weight: 700; margin-top: 2px; }
     
     /* Switch iOS */
     .switch-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -46,33 +50,41 @@
     .switch-label { font-size: 10px; font-weight: 600; color: var(--text-sec); }
 
     /* Tarjetas */
-    .card { background: var(--card); border-radius: 28px; padding: 24px; box-shadow: var(--shadow); transition: background 0.3s; }
+    .card { background: var(--card); border-radius: 26px; padding: 20px; box-shadow: var(--shadow); transition: background 0.3s; }
     
     /* Anillo SVG */
-    .dial-container { position: relative; width: 230px; height: 230px; margin: 10px auto; display: flex; align-items: center; justify-content: center; }
+    .dial-container { position: relative; width: 210px; height: 210px; margin: 4px auto; display: flex; align-items: center; justify-content: center; }
     svg { width: 100%; height: 100%; transform: rotate(135deg); }
     circle { fill: none; stroke-width: 18; stroke-linecap: round; }
     .track { stroke: var(--track); stroke-dasharray: 471 628; transition: stroke 0.3s; }
     .progress { stroke: #30D158; stroke-dasharray: 0 628; transition: stroke-dasharray 0.4s ease, stroke 0.4s ease; }
     
     .center-info { position: absolute; text-align: center; display: flex; flex-direction: column; align-items: center; }
-    .temp-value { font-size: 52px; font-weight: 700; letter-spacing: -1.5px; }
-    .status-text { font-size: 14px; font-weight: 700; letter-spacing: 0.8px; margin-top: 4px; color: #30D158; }
+    .temp-value { font-size: 48px; font-weight: 700; letter-spacing: -1.5px; }
+    .status-text { font-size: 13px; font-weight: 700; letter-spacing: 0.8px; margin-top: 2px; color: #30D158; }
 
-    /* Widgets inferiores */
-    .card-title { font-size: 12px; font-weight: 600; color: var(--text-sec); margin-bottom: 14px; letter-spacing: 0.4px; }
+    /* Widgets LEDs y Gráfica */
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .card-title { font-size: 12px; font-weight: 600; color: var(--text-sec); letter-spacing: 0.4px; }
+    .min-max { font-size: 11px; font-weight: 600; color: var(--text-sec); display: flex; align-items: center; gap: 8px; }
+    .btn-reset { background: var(--pill-off); color: var(--text-sec); border: none; padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; cursor: pointer; }
+    
     .pills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .pill { background: var(--pill-off); border-radius: 18px; padding: 12px; transition: all 0.3s ease; }
-    .pill-name { font-size: 14px; font-weight: 600; }
-    .pill-temp { font-size: 12px; color: var(--text-sec); margin-top: 4px; }
+    .pill { background: var(--pill-off); border-radius: 16px; padding: 10px 12px; transition: all 0.3s ease; }
+    .pill-name { font-size: 13px; font-weight: 600; }
+    .pill-temp { font-size: 11px; color: var(--text-sec); margin-top: 3px; }
     
     .pill.active-green { background: #30D158; color: #FFF; }
     .pill.active-orange { background: #FF9F0A; color: #FFF; }
     .pill.active-red { background: #FF453A; color: #FFF; }
     .pill[class*="active-"] .pill-temp { color: rgba(255,255,255,0.85); }
 
+    /* Gráfica */
+    .chart-wrap { width: 100%; height: 120px; position: relative; }
+    canvas { width: 100%; height: 100%; display: block; }
+
     /* Indicador conexión */
-    .conn-status { text-align: center; font-size: 12px; color: var(--text-sec); margin-top: auto; }
+    .conn-status { text-align: center; font-size: 12px; color: var(--text-sec); margin-top: auto; padding-bottom: 6px; }
     .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #FF9F0A; margin-right: 6px; }
     .dot.online { background: #30D158; }
   </style>
@@ -104,7 +116,22 @@
     </div>
 
     <div class="card">
-      <div class="card-title">ESTADO TÉRMICO (LEDS)</div>
+      <div class="card-header">
+        <div class="card-title">HISTORIAL RECIENTE</div>
+        <div class="min-max">
+          <span id="minMaxDisplay">Mín: --° • Máx: --°</span>
+          <button class="btn-reset" onclick="limpiarHistorial()">Borrar</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="tempChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">ESTADO TÉRMICO (LEDS)</div>
+      </div>
       <div class="pills">
         <div class="pill" id="pill1">
           <div class="pill-name">Fresco</div>
@@ -129,12 +156,20 @@
   <script>
     const TOPIC = "arduino/temperatura/mi_sala_secreta_987";
     const connText = document.getElementById("connText");
+    const MAX_PUNTOS = 30;
+    let historial = JSON.parse(localStorage.getItem("historial_sala") || "[]");
+    let colorActual = "#0A84FF";
+
+    if (historial.length > 0) {
+      const ultima = historial.at(-1);
+      actualizarUI(ultima);
+      actualizarMinMax();
+      setTimeout(dibujarGrafica, 100);
+    }
 
     if (typeof mqtt === "undefined") {
       connText.innerText = "Error: No cargó la librería MQTT";
     } else {
-      connText.innerText = "Intentando conectar al servidor...";
-      
       const client = mqtt.connect("wss://broker.emqx.io:8084/mqtt", {
         clientId: "movil_" + Math.random().toString(16).substr(2, 8),
         connectTimeout: 5000
@@ -146,22 +181,18 @@
         client.subscribe(TOPIC);
       });
 
-      client.on("error", (err) => {
-        connText.innerText = "Error MQTT: " + err.message;
-      });
-
-      client.on("offline", () => {
-        connText.innerText = "Sin respuesta del servidor (Offline)";
-      });
-
       client.on("message", (topic, message) => {
         const temp = parseFloat(message.toString());
-        if (!isNaN(temp)) actualizarUI(temp);
+        if (!isNaN(temp)) {
+          actualizarUI(temp);
+          agregarDatoGrafica(temp);
+        }
       });
     }
 
     function actualizarUI(t) {
       document.getElementById("tempDisplay").innerText = t.toFixed(1) + "°";
+      
       const pct = Math.min(Math.max((t - 15) / (32 - 15), 0.02), 1);
       const ring = document.getElementById("progressRing");
       ring.style.strokeDasharray = `${pct * 471} 628`;
@@ -172,6 +203,7 @@
       else if (t >= 24) { color = "#FF9F0A"; texto = "CÁLIDO"; }
       else if (t >= 22) { color = "#30D158"; texto = "TEMPLADO"; }
 
+      colorActual = color;
       ring.style.stroke = color;
       const statusEl = document.getElementById("statusDisplay");
       statusEl.innerText = texto;
@@ -182,11 +214,122 @@
       document.getElementById("pill3").className = "pill" + (t >= 26 ? " active-red" : "");
     }
 
+    function actualizarMinMax() {
+      if (historial.length === 0) {
+        document.getElementById("minMaxDisplay").innerText = "Mín: --° • Máx: --°";
+        return;
+      }
+      const min = Math.min(...historial).toFixed(1);
+      const max = Math.max(...historial).toFixed(1);
+      document.getElementById("minMaxDisplay").innerText = `Mín: ${min}° • Máx: ${max}°`;
+    }
+
+    function agregarDatoGrafica(temp) {
+      historial.push(temp);
+      if (historial.length > MAX_PUNTOS) historial.shift();
+      localStorage.setItem("historial_sala", JSON.stringify(historial));
+      actualizarMinMax();
+      dibujarGrafica();
+    }
+
+    function limpiarHistorial() {
+      historial = [];
+      localStorage.removeItem("historial_sala");
+      actualizarMinMax();
+      dibujarGrafica();
+    }
+
+    function dibujarGrafica() {
+      const canvas = document.getElementById("tempChart");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+
+      const ctx = canvas.getContext("2d");
+      ctx.scale(dpr, dpr);
+      const w = rect.width;
+      const h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+      if (historial.length < 2) return;
+
+      const minVal = Math.min(...historial) - 0.5;
+      const maxVal = Math.max(...historial) + 0.5;
+      const rango = maxVal - minVal || 1;
+
+      const padY = 14;
+      const utilH = h - padY * 2;
+      const stepX = w / (MAX_PUNTOS - 1);
+
+      // Líneas guía horizontales
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--grid');
+      ctx.lineWidth = 1;
+      [0, 0.5, 1].forEach(p => {
+        const y = padY + utilH * p;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      });
+
+      const offsetInicio = (MAX_PUNTOS - historial.length) * stepX;
+      const puntos = historial.map((val, i) => ({
+        x: offsetInicio + i * stepX,
+        y: padY + utilH - ((val - minVal) / rango) * utilH
+      }));
+
+      const primero = puntos.at(0);
+      const ultimo = puntos.at(-1);
+
+      // Degradado bajo la línea
+      const grad = ctx.createLinearGradient(0, padY, 0, h);
+      grad.addColorStop(0, colorActual + "44");
+      grad.addColorStop(1, colorActual + "00");
+
+      ctx.beginPath();
+      ctx.moveTo(primero.x, h);
+      puntos.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(ultimo.x, h);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Línea principal suave
+      ctx.beginPath();
+      ctx.moveTo(primero.x, primero.y);
+      puntos.forEach((p, i) => {
+        if (i === 0) return;
+        const prev = puntos.at(i - 1);
+        const xc = (prev.x + p.x) / 2;
+        const yc = (prev.y + p.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y, xc, yc);
+      });
+      ctx.lineTo(ultimo.x, ultimo.y);
+      ctx.strokeStyle = colorActual;
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      // Punto brillante en el último dato
+      ctx.beginPath();
+      ctx.arc(ultimo.x, ultimo.y, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = colorActual;
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--card');
+      ctx.stroke();
+    }
+
     function toggleTheme() {
       document.body.classList.toggle("dark");
       const isDark = document.body.classList.contains("dark");
       document.getElementById("themeLabel").innerText = isDark ? "OSCURO" : "CLARO";
+      dibujarGrafica();
     }
+
+    window.addEventListener("resize", dibujarGrafica);
+    window.addEventListener("resize", dibujarGrafica);
   </script>
 </body>
 </html>
