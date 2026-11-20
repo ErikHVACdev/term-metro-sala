@@ -126,25 +126,40 @@
 
   <script>
     const TOPIC = "arduino/temperatura/mi_sala_secreta_987";
-    const client = mqtt.connect("wss://test.mosquitto.org:8081/mqtt", {
-  clientId: "movil_" + Math.random().toString(16).substr(2, 8)
-});
+    const connText = document.getElementById("connText");
 
-    client.on("connect", () => {
-      document.getElementById("connDot").classList.add("online");
-      document.getElementById("connText").innerText = "En vivo desde Arduino";
-      client.subscribe(TOPIC);
-    });
+    if (typeof mqtt === "undefined") {
+      connText.innerText = "Error: No cargó la librería MQTT";
+    } else {
+      connText.innerText = "Intentando conectar al servidor...";
+      
+      const client = mqtt.connect("wss://://hivemq.com", {
+        clientId: "movil_" + Math.random().toString(16).substr(2, 8),
+        connectTimeout: 5000
+      });
 
-    client.on("message", (topic, message) => {
-      const temp = parseFloat(message.toString());
-      if (!isNaN(temp)) actualizarUI(temp);
-    });
+      client.on("connect", () => {
+        document.getElementById("connDot").classList.add("online");
+        connText.innerText = "En vivo desde Arduino";
+        client.subscribe(TOPIC);
+      });
+
+      client.on("error", (err) => {
+        connText.innerText = "Error MQTT: " + err.message;
+      });
+
+      client.on("offline", () => {
+        connText.innerText = "Sin respuesta del servidor (Offline)";
+      });
+
+      client.on("message", (topic, message) => {
+        const temp = parseFloat(message.toString());
+        if (!isNaN(temp)) actualizarUI(temp);
+      });
+    }
 
     function actualizarUI(t) {
       document.getElementById("tempDisplay").innerText = t.toFixed(1) + "°";
-      
-      // Calcular arco (270 grados = 471px de circunferencia)
       const pct = Math.min(Math.max((t - 15) / (32 - 15), 0.02), 1);
       const ring = document.getElementById("progressRing");
       ring.style.strokeDasharray = `${pct * 471} 628`;
@@ -160,7 +175,6 @@
       statusEl.innerText = texto;
       statusEl.style.color = color;
 
-      // Actualizar píldoras inferiores
       document.getElementById("pill1").className = "pill" + (t >= 22 ? " active-green" : "");
       document.getElementById("pill2").className = "pill" + (t >= 24 ? " active-orange" : "");
       document.getElementById("pill3").className = "pill" + (t >= 26 ? " active-red" : "");
