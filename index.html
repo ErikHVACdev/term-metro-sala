@@ -133,7 +133,7 @@
     } else {
       connText.innerText = "Intentando conectar al servidor...";
       
-      const client = mqtt.connect("wss://://hivemq.com", {
+      const client = mqtt.connect("wss://broker.emqx.io:8084/mqtt", {
         clientId: "movil_" + Math.random().toString(16).substr(2, 8),
         connectTimeout: 5000
       });
