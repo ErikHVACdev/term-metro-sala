@@ -125,9 +125,8 @@
   </div>
 
   <script>
-    // IMPORTANTE: Cambia "mi_sala_secreta_987" por un nombre único tuyo (debe ser el mismo en Python)
     const TOPIC = "arduino/temperatura/mi_sala_secreta_987";
-    const client = mqtt.connect("wss://://hivemq.com");
+    const client = mqtt.connect("wss://broker.emqx.io:8084/mqtt");
 
     client.on("connect", () => {
       document.getElementById("connDot").classList.add("online");
